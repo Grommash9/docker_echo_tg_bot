@@ -1,33 +1,32 @@
-import asyncio
 import logging
-from aiogram import Bot, Dispatcher, Router, types
-from aiogram.filters import Command
-from aiogram.types import Message
+import aiogram.types
+from aiogram import Bot, Dispatcher, executor, types
+import os
 
-TOKEN = "42:TOKEN"
-router = Router()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
+API_TOKEN = os.environ.get('BOT_TOKEN')
 
-@router.message(Command(commands=["start"]))
-async def command_start_handler(message: Message) -> None:
-    await message.answer(f"Hello, <b>{message.from_user.full_name}!</b>")
+if API_TOKEN is not None:
+    print("BOT_TOKEN:", API_TOKEN)
+else:
+    print("BOT_TOKEN not found!")
 
-
-@router.message()
-async def echo_handler(message: types.Message) -> None:
-    try:
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        await message.answer("Nice try!")
+# Initialize bot and dispatcher
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
 
 
-async def main() -> None:
-    dp = Dispatcher()
-    dp.include_router(router)
-    bot = Bot(TOKEN, parse_mode="HTML")
-    await dp.start_polling(bot)
+@dp.message_handler(commands=['start', 'help'])
+async def send_welcome(message: types.Message):
+    await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
+@dp.message_handler(content_types=aiogram.types.ContentType.ANY)
+async def echo(message: types.Message):
+    await message.copy_to(message.from_user.id)
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)

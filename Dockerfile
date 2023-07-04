@@ -1,15 +1,18 @@
-# Укажите базовый образ
+# Используем базовый образ Python
 FROM python:3.10
 
-# Установите необходимые зависимости
-RUN pip install -r requirements.txt
+# Устанавливаем рабочую директорию внутри контейнера
+WORKDIR /bot
 
-# Скопируйте файлы проекта в контейнер
-COPY . /
-WORKDIR /
+# Копируем зависимости в контейнер
+COPY requirements.txt .
 
-# Укажите переменные окружения
-ENV BOT_TOKEN=597743VykYUuQXfMPxwsqXY
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Запустите команду для запуска бота
+# Копируем исходный код в контейнер
+COPY . .
+
+# Запускаем телеграм-бот
 CMD ["python", "main.py"]
+
